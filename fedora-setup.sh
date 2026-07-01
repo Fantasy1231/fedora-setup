@@ -77,6 +77,7 @@ EOF
 STOW_TARGETS=(
   ".config/alacritty"
   ".config/atuin"
+  ".config/btop"
   ".config/fastfetch"
   ".config/herdr"
   ".config/lazygit"
@@ -156,7 +157,7 @@ phase1() {
   # so those are intentionally omitted here to avoid a conflicting rustc on PATH.
   for pkg in zsh stow neovim git unzip fontconfig gcc make cmake curl wget perl \
              python3 python3-pip python3-devel nodejs npm go ruby ruby-devel php graphviz \
-             ripgrep fd-find luarocks ImageMagick ghostscript htop \
+             ripgrep fd-find luarocks ImageMagick ghostscript htop btop \
              trash-cli tree net-tools bzip2 strace p7zip p7zip-plugins snapd flatpak; do
     if ! rpm -q "$pkg" &>/dev/null; then
       packages+=("$pkg")
