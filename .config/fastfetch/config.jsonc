@@ -17,22 +17,6 @@
     "color": {
       "output": "#c0caf5",
       "separator": "#565f89"
-    },
-    "percent": {
-      "type": 2,
-      "color": {
-        "green": "#7aa2f7",
-        "yellow": "#9d7cd8",
-        "red": "#bb9af7"
-      }
-    },
-    "bar": {
-      "char": {
-        "elapsed": "⣿",
-        "total": "⣀"
-      },
-      "width": 16,
-      "border": null
     }
   },
   "modules": [
@@ -55,67 +39,73 @@
     {
       "type": "host",
       "key": "  󰌢  Machine  ",
-      "keyColor": "#7aa9f8"
+      "keyColor": "#7aa8f8"
     },
     {
       "type": "kernel",
       "key": "  󰌽  Kernel   ",
-      "keyColor": "#7bb0f9"
+      "keyColor": "#7baff9"
     },
     {
       "type": "uptime",
       "key": "  󰅐  Uptime   ",
-      "keyColor": "#7bb7fb"
+      "keyColor": "#7bb5fa"
     },
     "break",
     {
       "type": "packages",
       "key": "  󰏗  Packages ",
-      "keyColor": "#7cbefc"
+      "keyColor": "#7cbcfc"
     },
     {
       "type": "wm",
       "key": "  󰖯  WM       ",
-      "keyColor": "#7cc5fd"
+      "keyColor": "#7cc2fd"
     },
     {
       "type": "shell",
       "key": "  󰞷  Shell    ",
-      "keyColor": "#7dccfe"
+      "keyColor": "#7dc9fe"
     },
     {
       "type": "terminal",
       "key": "  󰆍  Terminal ",
-      "keyColor": "#82cbfe"
+      "keyColor": "#7dcfff"
     },
     {
       "type": "terminalfont",
       "key": "  󰛖  Font     ",
-      "keyColor": "#8bc3fd"
+      "keyColor": "#86c7fe"
     },
     "break",
     {
       "type": "cpu",
       "key": "  󰻠  CPU      ",
-      "keyColor": "#95bbfc"
+      "keyColor": "#8fc0fd"
     },
     {
       "type": "gpu",
       "key": "  󰍛  GPU      ",
-      "keyColor": "#9eb2fb"
+      "keyColor": "#98b8fc"
     },
     {
-      "type": "memory",
+      "type": "command",
       "key": "  󰑭  Memory   ",
-      "keyColor": "#a8aaf9",
-      "format": "{percentage-bar} {total}"
+      "keyColor": "#a0b1fa",
+      "text": "awk 'BEGIN{while((getline l < \"/proc/meminfo\")>0){split(l,a,\":\");v=a[2];gsub(/[^0-9]/,\"\",v);if(a[1]==\"MemTotal\")tot=v;if(a[1]==\"MemAvailable\")av=v}used=tot-av;pct=used/tot;W=16;f=int(pct*W+0.5);r1=122;g1=162;b1=247;r2=187;g2=154;b2=247;for(i=0;i<W;i++){t=i/(W-1);r=r1+(r2-r1)*t;g=g1+(g2-g1)*t;b=b1+(b2-b1)*t;if(i<f)printf\"\\033[38;2;%d;%d;%dm\\342\\243\\277\",r,g,b;else printf\"\\033[38;2;%d;%d;%dm\\342\\243\\200\",r*0.35,g*0.35,b*0.35}printf\"\\033[0m %.2f GiB\",tot/1048576}' "
     },
     "break",
     {
       "type": "command",
       "key": "  󰛳  Network  ",
-      "keyColor": "#b1a2f8",
+      "keyColor": "#a9a9f9",
       "text": "iface=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i==\"dev\"){print $(i+1);exit}}'); [ -z \"$iface\" ] && echo Disconnected || { [ -d \"/sys/class/net/$iface/wireless\" ] && echo \"Connected (WLAN)\" || echo \"Connected (LAN)\"; }"
+    },
+    {
+      "type": "command",
+      "key": "  󰖟  Internet ",
+      "keyColor": "#b2a2f8",
+      "text": "t=$(curl -sf -m 2 -o /dev/null -w \"%{time_total}\" https://1.1.1.1 2>/dev/null); [ -n \"$t\" ] && echo \"Reachable ($(awk \"BEGIN{printf \\\"%.0f\\\",$t*1000}\") ms)\" || echo \"Unreachable\""
     },
     {
       "type": "localip",
