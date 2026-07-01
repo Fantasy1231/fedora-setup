@@ -1,5 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Raise timeouts so prompt rendering doesn't warn on slow filesystems
+# (e.g. WSL /mnt/c mounts or very large directories).
+scan_timeout = 100
+command_timeout = 1000
+
 format = """
 $username\
 $hostname\
