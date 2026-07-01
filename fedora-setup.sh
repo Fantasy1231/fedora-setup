@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 #
-# fedora-setup.sh — Fedora workstation bootstrap
-# (packages, zsh, stow dotfiles, CLI tools, neovim)
+# Fedora setup: packages, zsh, dotfiles, CLI tools, neovim.
 #
-# One-line install:
-#   curl -fsSL https://raw.githubusercontent.com/Fantasy1231/fedora-setup/main/bootstrap.sh | bash
-#
-# Options: --desktop | --headless | --sync   (auto-detects desktop by default)
-#   curl -fsSL https://raw.githubusercontent.com/Fantasy1231/fedora-setup/main/bootstrap.sh | bash -s -- --desktop
+# Install:  curl -fsSL https://raw.githubusercontent.com/Fantasy1231/fedora-setup/main/bootstrap.sh | bash
+# Options:  --desktop | --headless | --sync   (desktop auto-detected)
 #
 set -euo pipefail
 set +H
@@ -25,8 +21,7 @@ log_warn()  { printf '\033[1;33m%s\033[0m\n' "$*"; }
 log_error() { printf '\033[1;31m%s\033[0m\n' "$*"; }
 
 # ---- Sudo keep-alive ----
-# A single `sudo -v` expires after ~5 min; this refreshes it in the background
-# so long unattended runs never block on a password prompt mid-install.
+# Refresh the sudo timestamp in the background so long runs don't stall on a prompt.
 SUDO_KEEPALIVE_PID=""
 start_sudo_keepalive() {
   ( while true; do sudo -n true 2>/dev/null; sleep 50; kill -0 "$$" 2>/dev/null || exit 0; done ) &
@@ -37,8 +32,7 @@ stop_sudo_keepalive() {
   [[ -n "$SUDO_KEEPALIVE_PID" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
 }
 
-# Git identity: ~/.gitconfig.local (referenced by the dotfiles .gitconfig include).
-# Kept out of the public dotfiles repo, so it must be created per-machine.
+# Create the local git identity file (~/.gitconfig.local) if it's missing.
 setup_gitconfig_local() {
   local target="$HOME/.gitconfig.local"
 
@@ -49,7 +43,7 @@ setup_gitconfig_local() {
 
   local name="" email=""
   log_info "Configuring git identity (~/.gitconfig.local)..."
-  # Only prompt if we have a terminal; otherwise fall through to the template stub.
+  # Prompt if a terminal is available, otherwise write a template.
   if [[ -e /dev/tty ]]; then
     read -rp "  Git user name  (blank = fill in later): " name < /dev/tty || true
     read -rp "  Git email      (blank = fill in later): " email < /dev/tty || true
@@ -108,12 +102,12 @@ done
 if (( IS_DESKTOP == -1 )); then
   if [[ -n "${WSL_DISTRO_NAME:-}" || -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
     IS_DESKTOP=0
-    log_info "WSL detected — desktop extras (fonts, nvidia) will be skipped."
+    log_info "WSL detected — desktop extras (fonts) will be skipped."
   elif [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
     IS_DESKTOP=1
   else
     IS_DESKTOP=0
-    log_warn "No display detected — desktop extras (fonts, nvidia) will be skipped."
+    log_warn "No display detected — desktop extras (fonts) will be skipped."
     log_warn "Override with --desktop if this is a GUI system running headless."
   fi
 fi
@@ -152,9 +146,7 @@ phase1() {
   local -a packages=()
   local -a desktop_packages=()
 
-  # Core
-  # Note: Rust toolchain is provided by rustup (phase 4), not distro cargo/rust,
-  # so those are intentionally omitted here to avoid a conflicting rustc on PATH.
+  # Core packages (Rust comes from rustup in phase 4, not distro packages)
   for pkg in zsh stow neovim git unzip fontconfig gcc make cmake curl wget perl \
              python3 python3-pip python3-devel nodejs npm go ruby ruby-devel php graphviz \
              ripgrep fd-find luarocks ImageMagick ghostscript htop btop \
@@ -228,7 +220,7 @@ phase2() {
 phase3() {
   log_info "--- Phase 3: Dotfiles ---"
 
-  # Clone or pull the dotfiles repo (public HTTPS — no SSH key required)
+  # Clone or update dotfiles
   if [[ -d "$DOTFILES_DIR/.git" ]]; then
     cd "$DOTFILES_DIR"
     if ! git pull --ff-only; then
@@ -241,31 +233,38 @@ phase3() {
     git clone https://github.com/Fantasy1231/dotfiles.git "$DOTFILES_DIR"
   fi
 
-  # Verify .stow-local-ignore exists
   if [[ ! -f "$DOTFILES_DIR/.stow-local-ignore" ]]; then
-    log_warn ".stow-local-ignore not found in dotfiles repo — zinit/ and usr/ may be symlinked"
+    log_warn ".stow-local-ignore missing — zinit/ and usr/ may get symlinked"
   fi
 
-  # Backup conflicting targets
-  local backup_dir="$HOME/.config-backup/setup-$(date +%Y%m%d-%H%M%S)"
-  local has_conflicts=0
-  for t in "${STOW_TARGETS[@]}"; do
-    if [ -e "$HOME/$t" ] && [ ! -L "$HOME/$t" ]; then
-      mkdir -p "$backup_dir/$(dirname "$t")"
-      mv "$HOME/$t" "$backup_dir/$t"
-      log_info "  Backed up $t → $backup_dir/$t"
-      has_conflicts=1
-    fi
-  done
-
-  # Stow
   cd "$DOTFILES_DIR"
-  stow --no-folding . --target="$HOME"
-  if (( has_conflicts )); then
-    log_info "Backups saved to $backup_dir"
-  fi
 
-  # Git identity (~/.gitconfig.local, referenced by the dotfiles .gitconfig include)
+  # Back up any real files that would collide, so restow never aborts
+  local backup_dir="$HOME/.config-backup/setup-$(date +%Y%m%d-%H%M%S)"
+  local backed_up=0 conflict link
+  while IFS= read -r conflict; do
+    [ -n "$conflict" ] || continue
+    if [ -e "$HOME/$conflict" ] && [ ! -L "$HOME/$conflict" ]; then
+      mkdir -p "$backup_dir/$(dirname "$conflict")"
+      mv "$HOME/$conflict" "$backup_dir/$conflict"
+      log_info "  Backed up $conflict"
+      backed_up=1
+    fi
+  done < <(stow -n --restow --no-folding . --target="$HOME" 2>&1 \
+             | sed -n 's/.*existing target is neither a link nor a directory: //p; s/.*over existing target \(.*\) since.*/\1/p')
+
+  # Deploy (restow is idempotent, so re-runs just update)
+  stow --restow --no-folding . --target="$HOME"
+  (( backed_up )) && log_info "Backups saved to $backup_dir"
+
+  # Remove dangling symlinks left by files dropped in newer versions
+  while IFS= read -r link; do
+    case "$(readlink "$link" 2>/dev/null)" in
+      *Workspace/linux/dotfiles*) rm -f "$link"; log_info "  Removed stale link ${link#"$HOME"/}" ;;
+    esac
+  done < <(find "$HOME" -maxdepth 1 -xtype l 2>/dev/null; find "$HOME/.config" -maxdepth 5 -xtype l 2>/dev/null)
+
+  # Create ~/.gitconfig.local git identity if missing
   setup_gitconfig_local
 
   log_info "Phase 3 complete"
@@ -362,7 +361,7 @@ phase5() {
 
   log_info "--- Phase 5: Desktop extras ---"
 
-  # ---- RPM Fusion (needed for Nvidia) ----
+  # ---- RPM Fusion (multimedia + unrar) ----
   if ! rpm -q rpmfusion-free-release &>/dev/null; then
     log_info "RPM Fusion: enabling..."
     local fedora_ver
@@ -391,15 +390,7 @@ phase5() {
     rm -rf "$tmp_dir"
   fi
 
-  # ---- Nvidia driver ----
-  if rpm -q akmod-nvidia &>/dev/null; then
-    log_info "Nvidia driver already installed"
-  else
-    log_info "Nvidia: installing driver..."
-    sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda || log_warn "Nvidia install had issues"
-  fi
-
-  # ---- unrar (requires RPM Fusion nonfree) ----
+  # ---- unrar (RPM Fusion nonfree) ----
   if ! rpm -q unrar &>/dev/null; then
     sudo dnf install -y unrar || log_warn "unrar not available (RPM Fusion nonfree may be missing)"
   fi
