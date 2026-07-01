@@ -1,85 +1,82 @@
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-  "logo": {
-    	"source": "~/.config/fastfetch/assets/image.png",
-    	"type": "kitty-direct",
-    	"padding": {
-    		"top": 2,
-            "left": 6
-    	},
-      "width": 20,
-      "height": 15
-  },
-
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
   "display": {
-    "separator": "  "
+    "key": {
+      "width": 10
+    },
+    "separator": ""
+  },
+  "logo": {
+    "type": "builtin",
+    "source": "Fedora_small",
+    "color": {
+      "1": "#7aa2f7",
+      "2": "#7dcfff"
+    },
+    "padding": {
+      "top": 1,
+      "left": 2
+    }
   },
   "modules": [
     "break",
     {
-        "type": "custom",
-        "format": "\u001b[91m╭──────────────────────────         ─────────────────────────╮"
+      "type": "command",
+      "key": "󰀄 USER",
+      "keyColor": "#7aa2f7",
+      "text": "echo $USER@$(hostnamectl hostname)"
     },
     {
-        "type": "os",
-        "key":  "\u001b[31m│\u001b[0m \u001b[37m󰧨 \u001b[0m"
+      "type": "os",
+      "key": "󰣇 OS",
+      "keyColor": "#7ab0f8",
+      "format": "{name} {version-id}"
     },
     {
-        "type": "kernel",
-        "key":  "\u001b[31m│\u001b[0m \u001b[33m󰻀 \u001b[0m",
-        "keyColor": "yellow"
+      "type": "command",
+      "key": "󰌽 KER",
+      "keyColor": "#7dbdfb",
+      "text": "echo $(uname -r | cut -d- -f1) $(uname -m)"
     },
     {
-        "type": "uptime",
-        "key": "\u001b[31m│\u001b[0m \u001b[34m \u001b[0m",
-        "keyColor": "cyan"
+      "type": "packages",
+      "key": "󰏗 PKG",
+      "keyColor": "#7dc4fc",
+      "format": "{all}"
     },
     {
-        "type": "custom",
-        "format": "\u001b[91m╰─────────────────────────────────────────────────────────────────────╯"
-    },
-    "break",
-    {
-        "type": "custom",
-        "format": "\u001b[35m╭──────────────────────────󰣙 󰣙 󰣙 󰣙 󰣙 󰣙 󰣙 󰣙 󰣙 ─────────────────────────╮"
+      "type": "terminal",
+      "key": "󰆍 TERM",
+      "keyColor": "#7dcbfe",
+      "format": "{pretty-name}"
     },
     {
-        "type": "chassis",
-        "key": "\u001b[35m│\u001b[0m \u001b[31m \u001b[0m"
+      "type": "shell",
+      "key": "󰞷 SH",
+      "keyColor": "#7dcfff",
+      "format": "{pretty-name}"
     },
     {
-        "type": "packages",
-        "key": "\u001b[35m│\u001b[0m \u001b[32m \u001b[0m"
+      "type": "uptime",
+      "keyColor": "#89ddff",
+      "key": "󰥔 UP"
     },
     {
-        "type": "shell",
-        "key": "\u001b[35m│\u001b[0m \u001b[33m \u001b[0m"
+      "type": "memory",
+      "key": "󰍛 RAM",
+      "keyColor": "#9ae6ff",
+      "format": "{used} / {total} ({percentage})"
     },
     {
-        "type": "custom",
-        "format": "\u001b[35m╰─────────────────────────────────────────────────────────────────────╯"
-    },
-    "break",
-    {
-        "type": "custom",
-        "format": "\u001b[93m╭──────────────────────────         ─────────────────────────╮"
+      "type": "disk",
+      "folders": "/",
+      "key": "󰋊 SSD",
+      "keyColor": "#b4f9f8",
+      "format": "{size-used} / {size-total} ({size-percentage})"
     },
     {
-        "type": "cpu",
-        "key": "\u001b[93m│\u001b[0m \u001b[34m \u001b[0m"
-    },
-    {
-        "type": "gpu",
-        "key": "\u001b[93m│\u001b[0m \u001b[35m󱤓 \u001b[0m"
-    },
-    {
-        "type": "memory",
-        "key": "\u001b[93m│\u001b[0m \u001b[31m \u001b[0m",
-        "keyColor": "white"
-    },
-    {
-        "type": "custom",
-        "format": "\u001b[93m╰─────────────────────────────────────────────────────────────────────╯"
+      "type": "custom",
+      "format": "\u001b[90m \u001b[91m \u001b[92m \u001b[93m \u001b[94m \u001b[95m \u001b[96m \u001b[97m"
     },
     "break"
   ]
