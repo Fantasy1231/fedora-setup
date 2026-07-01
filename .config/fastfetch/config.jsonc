@@ -17,6 +17,14 @@
     "color": {
       "output": "#c0caf5",
       "separator": "#565f89"
+    },
+    "percent": {
+      "type": 9,
+      "color": {
+        "green": "#7aa2f7",
+        "yellow": "#9d7cd8",
+        "red": "#bb9af7"
+      }
     }
   },
   "modules": [
@@ -39,32 +47,32 @@
     {
       "type": "host",
       "key": "  󰌢  Machine  ",
-      "keyColor": "#7aaaf8"
+      "keyColor": "#7aa8f8"
     },
     {
       "type": "kernel",
       "key": "  󰌽  Kernel   ",
-      "keyColor": "#7bb1fa"
+      "keyColor": "#7baff9"
     },
     {
       "type": "uptime",
       "key": "  󰅐  Uptime   ",
-      "keyColor": "#7cb8fb"
+      "keyColor": "#7bb5fa"
     },
     {
       "type": "packages",
       "key": "  󰏗  Packages ",
-      "keyColor": "#7cc0fc"
+      "keyColor": "#7cbcfc"
     },
     {
       "type": "wm",
       "key": "  󰖯  WM       ",
-      "keyColor": "#7cc8fe"
+      "keyColor": "#7cc2fd"
     },
     {
       "type": "shell",
       "key": "  󰞷  Shell    ",
-      "keyColor": "#7dcfff"
+      "keyColor": "#7dc9fe"
     },
     {
       "type": "terminal",
@@ -74,27 +82,33 @@
     {
       "type": "terminalfont",
       "key": "  󰛖  Font     ",
-      "keyColor": "#87c6fe"
+      "keyColor": "#86c7fe"
     },
     {
       "type": "cpu",
       "key": "  󰻠  CPU      ",
-      "keyColor": "#92bdfc"
+      "keyColor": "#8fc0fd"
+    },
+    {
+      "type": "cpuusage",
+      "key": "  󰾆  Load     ",
+      "keyColor": "#98b8fc",
+      "format": "{avg}"
     },
     {
       "type": "gpu",
       "key": "  󰍛  GPU      ",
-      "keyColor": "#9cb4fb"
+      "keyColor": "#a0b1fa"
     },
     {
       "type": "memory",
       "key": "  󰑭  Memory   ",
-      "keyColor": "#a6acfa"
+      "keyColor": "#a9a9f9"
     },
     {
       "type": "command",
       "key": "  󰛳  Network  ",
-      "keyColor": "#b1a3f8",
+      "keyColor": "#b2a2f8",
       "text": "iface=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i==\"dev\"){print $(i+1);exit}}'); [ -z \"$iface\" ] && echo Disconnected || { [ -d \"/sys/class/net/$iface/wireless\" ] && echo \"Connected (WLAN)\" || echo \"Connected (LAN)\"; }"
     },
     {
