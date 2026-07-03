@@ -2,14 +2,15 @@
 #
 # Fedora setup: packages, zsh, dotfiles, CLI tools, neovim.
 #
-# Install:  curl -fsSL https://raw.githubusercontent.com/keirfantasy/fedora-setup/main/bootstrap.sh | bash
+# Install:  curl -fsSL https://raw.githubusercontent.com/keirfantasy/fedora/main/bootstrap.sh | bash
 # Options:  --desktop | --headless | --sync   (desktop auto-detected)
 #
 set -euo pipefail
 set +H
 export LC_ALL=C
 
-DOTFILES_DIR="$HOME/Workspace/linux/dotfiles"
+REPO_DIR="$HOME/Workspace/linux/fedora"
+DOTFILES_DIR="$REPO_DIR/dotfiles"
 
 # ---- PATH ----
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.opencode/bin:$HOME/.atuin/bin:$HOME/.fzf/bin:$PATH"
@@ -232,17 +233,17 @@ phase2() {
 phase3() {
   log_info "--- Phase 3: Dotfiles ---"
 
-  # Clone or update dotfiles
-  if [[ -d "$DOTFILES_DIR/.git" ]]; then
-    cd "$DOTFILES_DIR"
+  # Clone or update the setup repo (dotfiles live in its dotfiles/ subdir)
+  if [[ -d "$REPO_DIR/.git" ]]; then
+    cd "$REPO_DIR"
     if ! git pull --ff-only; then
-      log_error "dotfiles repo has diverged — resolve manually in $DOTFILES_DIR"
+      log_error "setup repo has diverged — resolve manually in $REPO_DIR"
       exit 1
     fi
   else
-    log_info "Cloning dotfiles repo..."
-    mkdir -p "$(dirname "$DOTFILES_DIR")"
-    git clone https://github.com/keirfantasy/dotfiles.git "$DOTFILES_DIR"
+    log_info "Cloning setup repo..."
+    mkdir -p "$(dirname "$REPO_DIR")"
+    git clone https://github.com/keirfantasy/fedora.git "$REPO_DIR"
   fi
 
   if [[ ! -f "$DOTFILES_DIR/.stow-local-ignore" ]]; then
@@ -270,9 +271,10 @@ phase3() {
   (( backed_up )) && log_info "Backups saved to $backup_dir"
 
   # Remove dangling symlinks left by files dropped in newer versions
+  # (also matches the pre-merge ~/Workspace/linux/dotfiles location)
   while IFS= read -r link; do
     case "$(readlink "$link" 2>/dev/null)" in
-      *Workspace/linux/dotfiles*) rm -f "$link"; log_info "  Removed stale link ${link#"$HOME"/}" ;;
+      *Workspace/linux/fedora/dotfiles*|*Workspace/linux/dotfiles*) rm -f "$link"; log_info "  Removed stale link ${link#"$HOME"/}" ;;
     esac
   done < <(find "$HOME" -maxdepth 1 -xtype l 2>/dev/null; find "$HOME/.config" -maxdepth 5 -xtype l 2>/dev/null)
 
@@ -610,12 +612,10 @@ install_fastfetch() {
 # Sync (maintenance mode)
 # ----------------------------------------------------------------------
 sync_main() {
-  local dotfiles="$HOME/Workspace/linux/dotfiles"
-
-  log_info "--- Sync: dotfiles ---"
-  cd "$dotfiles"
+  log_info "--- Sync: repo ---"
+  cd "$REPO_DIR"
   if ! git pull --ff-only; then
-    log_error "dotfiles repo has diverged — resolve manually in $dotfiles"
+    log_error "setup repo has diverged — resolve manually in $REPO_DIR"
     exit 1
   fi
   log_info "  OK"
@@ -629,7 +629,7 @@ sync_main() {
       log_info "  Backed up $t"
     fi
   done
-  cd "$dotfiles" && stow --restow --no-folding . --target="$HOME"
+  cd "$DOTFILES_DIR" && stow --restow --no-folding . --target="$HOME"
   log_info "  OK"
 
   log_info "--- Sync: tools ---"
